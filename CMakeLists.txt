@@ -22,8 +22,15 @@ endif()
 
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src" AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/external")
     set(LFS_REPO_ROOT_DEFAULT "${CMAKE_CURRENT_SOURCE_DIR}")
-else()
+elseif(EXISTS "${CMAKE_CURRENT_LIST_DIR}/../../src" AND EXISTS "${CMAKE_CURRENT_LIST_DIR}/../../external")
     set(LFS_REPO_ROOT_DEFAULT "${CMAKE_CURRENT_LIST_DIR}/../..")
+else()
+    message(FATAL_ERROR
+        "This checkout does not contain the source folders needed by the standalone trainer.\n"
+        "Expected either:\n"
+        "  1. an Option A exported repo with ./src and ./external, or\n"
+        "  2. this project inside the full LichtFeld checkout with ../../src and ../../external.\n"
+        "If you pushed only projects/train_colmap_headless, rerun export_option_a.ps1 and push the exported destination repo.")
 endif()
 set(LFS_REPO_ROOT "${LFS_REPO_ROOT_DEFAULT}" CACHE PATH "Path to the standalone repo root or LichtFeld-Studio repository root")
 get_filename_component(LFS_REPO_ROOT "${LFS_REPO_ROOT}" ABSOLUTE)

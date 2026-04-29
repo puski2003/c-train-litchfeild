@@ -15,13 +15,31 @@ New-Item -ItemType Directory -Force -Path (Join-Path $destRoot "tools") | Out-Nu
 New-Item -ItemType Directory -Force -Path (Join-Path $destRoot "src") | Out-Null
 New-Item -ItemType Directory -Force -Path (Join-Path $destRoot "src\python") | Out-Null
 
-Copy-Item -Force (Join-Path $projectDir "CMakeLists.txt") (Join-Path $destRoot "CMakeLists.txt")
-Copy-Item -Force (Join-Path $projectDir "README.md") (Join-Path $destRoot "README.md")
-Copy-Item -Force (Join-Path $projectDir "stubs\python_runner_stub.cpp") (Join-Path $destRoot "stubs\python_runner_stub.cpp")
-Copy-Item -Force (Join-Path $repoRoot "tools\train_colmap_headless.cpp") (Join-Path $destRoot "tools\train_colmap_headless.cpp")
-Copy-Item -Force (Join-Path $repoRoot "vcpkg.json") (Join-Path $destRoot "vcpkg.json")
-Copy-Item -Force (Join-Path $repoRoot "LICENSE") (Join-Path $destRoot "LICENSE") -ErrorAction SilentlyContinue
-Copy-Item -Force (Join-Path $repoRoot "src\python\runner.hpp") (Join-Path $destRoot "src\python\runner.hpp")
+function Copy-FileIfDifferent {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Source,
+        [Parameter(Mandatory = $true)]
+        [string]$Target
+    )
+
+    $sourcePath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Source)
+    $targetPath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Target)
+    if ($sourcePath -ieq $targetPath) {
+        return
+    }
+    Copy-Item -Force $sourcePath $targetPath
+}
+
+Copy-FileIfDifferent (Join-Path $projectDir "CMakeLists.txt") (Join-Path $destRoot "CMakeLists.txt")
+Copy-FileIfDifferent (Join-Path $projectDir "README.md") (Join-Path $destRoot "README.md")
+Copy-FileIfDifferent (Join-Path $projectDir "stubs\python_runner_stub.cpp") (Join-Path $destRoot "stubs\python_runner_stub.cpp")
+Copy-FileIfDifferent (Join-Path $repoRoot "tools\train_colmap_headless.cpp") (Join-Path $destRoot "tools\train_colmap_headless.cpp")
+Copy-FileIfDifferent (Join-Path $repoRoot "vcpkg.json") (Join-Path $destRoot "vcpkg.json")
+if (Test-Path (Join-Path $repoRoot "LICENSE")) {
+    Copy-FileIfDifferent (Join-Path $repoRoot "LICENSE") (Join-Path $destRoot "LICENSE")
+}
+Copy-FileIfDifferent (Join-Path $repoRoot "src\python\runner.hpp") (Join-Path $destRoot "src\python\runner.hpp")
 
 function Copy-Tree {
     param(
